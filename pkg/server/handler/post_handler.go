@@ -47,8 +47,7 @@ func (h *PostHandler) WritePost(ctx context.Context, req *pb.WritePostRequest) (
 		return nil, status.Error(codes.Internal, "failed to write post")
 	}
 
-	var loadedPost db.Post
-	h.DB.Preload("User").First(&loadedPost, post.ID)
+	h.DB.Joins("User").First(&post)
 
 	return &pb.WritePostResponse{
 		Post: &pb.Post{
