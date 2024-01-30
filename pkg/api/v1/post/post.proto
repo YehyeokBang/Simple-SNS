@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package v1.post;
+
+option go_package = "github.com/YehyeokBang/Simple-SNS/pkg/api/v1/post";
+
+service PostService {
+  rpc WritePost(WritePostRequest) returns (WritePostResponse) {}
+  rpc GetPosts(GetPostsRequest) returns (GetPostsResponse) {}
+  rpc UpdatePost(UpdatePostRequest) returns (UpdatePostResponse) {}
+  rpc DeletePost(DeletePostRequest) returns (DeletePostResponse) {}
+}
+
+message Post {
+  uint32 id = 1;
+  string user_name = 2;
+  string content = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+message WritePostRequest {
+  string content = 1;
+}
+
+message WritePostResponse {
+  Post post = 1;
+}
+
+message GetPostsRequest {
+  uint32 page = 1;
+  uint32 limit = 2;
+}
+
+message GetPostsResponse {
+  repeated Post posts = 1;
+}
+
+message UpdatePostRequest {
+  uint32 id = 1;
+  string content = 2;
+}
+
+message UpdatePostResponse {
+  Post post = 1;
+}
+
+message DeletePostRequest {
+  uint32 id = 1;
+}
+
+message DeletePostResponse {
+  bool status = 1;
+}

@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"net"
 
-	pb "github.com/YehyeokBang/Simple-SNS/pkg/api/v1/user"
+	postpb "github.com/YehyeokBang/Simple-SNS/pkg/api/v1/post"
+	userpb "github.com/YehyeokBang/Simple-SNS/pkg/api/v1/user"
 	"github.com/YehyeokBang/Simple-SNS/pkg/auth"
 	"github.com/YehyeokBang/Simple-SNS/pkg/server/handler"
 	"google.golang.org/grpc"
@@ -38,7 +39,10 @@ func (s *Server) RunGRPCServer() error {
 	)
 
 	userHandler := handler.NewUserHandler(s.DB, s.JWT)
-	pb.RegisterUserServiceServer(grpcServer, userHandler)
+	userpb.RegisterUserServiceServer(grpcServer, userHandler)
+
+	postHandler := handler.NewPostHandler(s.DB, s.JWT)
+	postpb.RegisterPostServiceServer(grpcServer, postHandler)
 
 	fmt.Println("grpc server is running")
 

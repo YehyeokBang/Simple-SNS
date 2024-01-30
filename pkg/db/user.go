@@ -13,4 +13,6 @@ type User struct {
 	Introduce string `gorm:"type:varchar(100)"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
+
+	Posts []Post
 }

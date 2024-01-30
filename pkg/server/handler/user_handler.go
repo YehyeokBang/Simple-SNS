@@ -84,10 +84,19 @@ func (h *UserHandler) LogIn(ctx context.Context, req *pb.LogInRequest) (*pb.LogI
 	}, nil
 }
 
-func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+func ExtractUserIDFromContext(ctx context.Context) (string, error) {
 	userID := ctx.Value(auth.UserIDKey).(string)
 	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user id is not provided")
+		return "", status.Error(codes.Unauthenticated, "user id is not provided")
+	}
+
+	return userID, nil
+}
+
+func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+	userID, err := ExtractUserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	var user db.User
