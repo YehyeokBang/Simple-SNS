@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package v1.user;
+
+option go_package = "github.com/YehyeokBang/Simple-SNS/pkg/api/v1/user";
+
+service UserService {
+  rpc SignUp(SignUpRequest) returns (SignUpResponse);
+  rpc LogIn(LogInRequest) returns (LogInResponse);
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+}
+
+message SignUpRequest {
+  string user_id = 1;
+  string password = 2;
+  string name = 3;
+  uint32 age = 4;
+  string sex = 5;
+  google.protobuf.Timestamp birthday = 6;
+  string introduce = 7;
+}
+
+message SignUpResponse {
+  string user_id = 1;
+}
+
+message LogInRequest {
+  string user_id = 1;
+  string password = 2;
+}
+
+message LogInResponse {
+  string jwt_token = 1;
+}
+
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message GetUserResponse {
+  string user_id = 1;
+  string name = 2;
+  uint32 age = 3;
+  string sex = 4;
+  google.protobuf.Timestamp birthday = 5;
+  string introduce = 6;
+}

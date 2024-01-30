@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/YehyeokBang/Simple-SNS/config"
+	"github.com/YehyeokBang/Simple-SNS/pkg/auth"
 	"github.com/YehyeokBang/Simple-SNS/pkg/db"
+	"github.com/YehyeokBang/Simple-SNS/pkg/server"
 )
 
 func main() {
@@ -20,10 +20,12 @@ func main() {
 		log.Fatalf("failed to connect database: %v", err)
 	}
 
-	fmt.Println(db)
+	jwt := auth.NewJWT(cfg.JWTSecret)
 
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("pong"))
-	})
-	http.ListenAndServe(":8080", nil)
+	server := server.NewServer(db, jwt)
+
+	err = server.RunGRPCServer()
+	if err != nil {
+		log.Fatalf("failed to run grpc server: %v", err)
+	}
 }

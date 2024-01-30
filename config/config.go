@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -13,15 +12,16 @@ type Config struct {
 	DBHost     string
 	DBPort     string
 	DBName     string
+	JWTSecret  string
 }
 
 func NewConfig() (*Config, error) {
 	err := godotenv.Load()
 	if err != nil {
-		return nil, fmt.Errorf("failed to load env: %w", err)
+		return nil, err
 	}
 
-	databaseEnvs := []string{
+	envs := []string{
 		"MYSQL_USER",
 		"MYSQL_PASSWORD",
 		"MYSQL_HOST",
@@ -29,9 +29,9 @@ func NewConfig() (*Config, error) {
 		"MYSQL_DATABASE",
 	}
 
-	for _, env := range databaseEnvs {
+	for _, env := range envs {
 		if os.Getenv(env) == "" {
-			return nil, fmt.Errorf("database env is not set")
+			return nil, err
 		}
 	}
 
@@ -41,5 +41,6 @@ func NewConfig() (*Config, error) {
 		DBHost:     os.Getenv("MYSQL_HOST"),
 		DBPort:     os.Getenv("MYSQL_PORT"),
 		DBName:     os.Getenv("MYSQL_DATABASE"),
+		JWTSecret:  os.Getenv("JWT_SECRET"),
 	}, nil
 }

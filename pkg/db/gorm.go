@@ -14,7 +14,12 @@ func NewGormDB(config *config.Config) (*gorm.DB, error) {
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect database: %w", err)
+		return nil, err
+	}
+
+	err = db.AutoMigrate(&User{})
+	if err != nil {
+		return nil, err
 	}
 
 	return db, nil
