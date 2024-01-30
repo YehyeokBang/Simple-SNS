@@ -27,5 +27,10 @@ func NewGormDB(config *config.Config) (*gorm.DB, error) {
 		return nil, err
 	}
 
+	err = db.AutoMigrate(&Comment{})
+	if err != nil {
+		return nil, err
+	}
+
 	return db, nil
 }

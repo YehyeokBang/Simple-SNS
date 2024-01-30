@@ -14,4 +14,6 @@ type Post struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeleteAt  gorm.DeletedAt
+
+	Comments []Comment `gorm:"foreignKey:PostID"`
 }

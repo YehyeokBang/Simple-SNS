@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 
+	commentpb "github.com/YehyeokBang/Simple-SNS/pkg/api/v1/comment"
 	postpb "github.com/YehyeokBang/Simple-SNS/pkg/api/v1/post"
 	userpb "github.com/YehyeokBang/Simple-SNS/pkg/api/v1/user"
 	"github.com/YehyeokBang/Simple-SNS/pkg/auth"
@@ -43,6 +44,9 @@ func (s *Server) RunGRPCServer() error {
 
 	postHandler := handler.NewPostHandler(s.DB, s.JWT)
 	postpb.RegisterPostServiceServer(grpcServer, postHandler)
+
+	commentHandler := handler.NewCommentHandler(s.DB, s.JWT)
+	commentpb.RegisterCommentServiceServer(grpcServer, commentHandler)
 
 	fmt.Println("grpc server is running")
 

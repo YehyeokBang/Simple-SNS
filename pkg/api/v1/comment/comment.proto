@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package v1.comment;
+
+option go_package = "github.com/YehyeokBang/Simple-SNS/pkg/api/v1/comment";
+
+service CommentService {
+  rpc WriteComment(WriteCommentRequest) returns (WriteCommentResponse) {}
+  rpc WriteReply(WriteReplyRequest) returns (WriteReplyResponse) {}
+  rpc UpdateComment(UpdateCommentRequest) returns (UpdateCommentResponse) {}
+  rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse) {}
+}
+
+message Comment {
+  uint32 id = 1;
+  uint32 post_id = 2;
+  string user_name = 3;
+  string content = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message WriteCommentRequest {
+  uint32 post_id = 1;
+  string content = 2;
+}
+
+message WriteCommentResponse {
+  Comment comment = 1;
+}
+
+message WriteReplyRequest {
+  uint32 post_id = 1;
+  uint32 parent_comment_id = 2;
+  string content = 3;
+}
+
+message WriteReplyResponse {
+  Comment reply = 1;
+}
+
+message UpdateCommentRequest {
+  uint32 comment_id = 1;
+  string content = 2;
+}
+
+message UpdateCommentResponse {
+  Comment comment = 1;
+}
+
+message DeleteCommentRequest {
+  uint32 comment_id = 1;
+}
+
+message DeleteCommentResponse {
+  string message = 1;
+}
