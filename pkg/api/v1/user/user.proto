@@ -36,7 +36,6 @@ message LogInResponse {
 }
 
 message GetUserRequest {
-  string user_id = 1;
 }
 
 message GetUserResponse {
