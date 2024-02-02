@@ -48,7 +48,7 @@ func (s *Server) RunGRPCServer() error {
 	commentHandler := handler.NewCommentHandler(s.DB, s.JWT)
 	commentpb.RegisterCommentServiceServer(grpcServer, commentHandler)
 
-	fmt.Println("grpc server is running")
+	fmt.Printf("\n---------------------------------\n\n[grpc server is running]\n\n---------------------------------\n\n")
 
 	if err := grpcServer.Serve(listen); err != nil {
 		return err
