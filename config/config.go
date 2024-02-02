@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -15,10 +16,10 @@ type Config struct {
 	JWTSecret  string
 }
 
-func NewConfig() (*Config, error) {
+func MustNewConfig() *Config {
 	err := godotenv.Load()
 	if err != nil {
-		return nil, err
+		log.Fatalf("failed to load env file: %v", err)
 	}
 
 	envs := []string{
@@ -31,7 +32,7 @@ func NewConfig() (*Config, error) {
 
 	for _, env := range envs {
 		if os.Getenv(env) == "" {
-			return nil, err
+			log.Fatalf("environment variable %s is not set", env)
 		}
 	}
 
@@ -42,5 +43,5 @@ func NewConfig() (*Config, error) {
 		DBPort:     os.Getenv("MYSQL_PORT"),
 		DBName:     os.Getenv("MYSQL_DATABASE"),
 		JWTSecret:  os.Getenv("JWT_SECRET"),
-	}, nil
+	}
 }

@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func NewGormDB(config *config.Config) (*gorm.DB, error) {
+func MustNewGormDB(config *config.Config) *gorm.DB {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", config.DBUser, config.DBPassword, config.DBHost, config.DBPort, config.DBName)
 
 	newLogger := logger.New(
@@ -31,23 +31,23 @@ func NewGormDB(config *config.Config) (*gorm.DB, error) {
 		Logger: newLogger,
 	})
 	if err != nil {
-		return nil, err
+		log.Fatalf("failed to connect database: %v", err)
 	}
 
 	err = db.AutoMigrate(&User{})
 	if err != nil {
-		return nil, err
+		log.Fatalf("failed to migrate user: %v", err)
 	}
 
 	err = db.AutoMigrate(&Post{})
 	if err != nil {
-		return nil, err
+		log.Fatalf("failed to migrate post: %v", err)
 	}
 
 	err = db.AutoMigrate(&Comment{})
 	if err != nil {
-		return nil, err
+		log.Fatalf("failed to migrate comment: %v", err)
 	}
 
-	return db, nil
+	return db
 }

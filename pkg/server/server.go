@@ -1,7 +1,7 @@
 package server
 
 import (
-	"fmt"
+	"log"
 	"net"
 
 	commentpb "github.com/YehyeokBang/Simple-SNS/pkg/api/v1/comment"
@@ -29,10 +29,10 @@ func NewServer(db *gorm.DB, jwt *auth.JWT) *Server {
 	}
 }
 
-func (s *Server) RunGRPCServer() error {
+func (s *Server) MustRunGRPCServer() {
 	listen, err := net.Listen("tcp", port)
 	if err != nil {
-		return err
+		log.Fatalf("failed to listen: %v", err)
 	}
 
 	grpcServer := grpc.NewServer(
@@ -48,11 +48,9 @@ func (s *Server) RunGRPCServer() error {
 	commentHandler := handler.NewCommentHandler(s.DB, s.JWT)
 	commentpb.RegisterCommentServiceServer(grpcServer, commentHandler)
 
-	fmt.Printf("\n---------------------------------\n\n[grpc server is running]\n\n---------------------------------\n\n")
+	log.Printf("\n\n---------------------------------\n\n[grpc server is running on port %s]\n\n---------------------------------\n\n", port)
 
 	if err := grpcServer.Serve(listen); err != nil {
-		return err
+		log.Fatalf("failed to serve: %v", err)
 	}
-
-	return nil
 }
