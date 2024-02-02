@@ -17,7 +17,7 @@ service PostService {
 message PostSummary {
   uint32 id = 1;
   string user_name = 2;
-  string content = 3;
+  string title = 3;
   uint32 comment_count = 4;
   google.protobuf.Timestamp created_at = 5;
   google.protobuf.Timestamp updated_at = 6;
@@ -26,10 +26,11 @@ message PostSummary {
 message Post {
   uint32 id = 1;
   string user_name = 2;
-  string content = 3;
-  repeated Comment comments = 4;
-  google.protobuf.Timestamp created_at = 5;
-  google.protobuf.Timestamp updated_at = 6;
+  string title = 3;
+  string content = 4;
+  repeated Comment comments = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
 }
 
 message Comment {
@@ -45,11 +46,12 @@ message Comment {
 }
 
 message WritePostRequest {
-  string content = 1;
+  string title = 1;
+  string content = 2;
 }
 
 message WritePostResponse {
-  PostSummary post_summary = 1;
+  string message = 1;
 }
 
 message GetPostsRequest {
@@ -71,11 +73,12 @@ message GetPostByIdResponse {
 
 message UpdatePostRequest {
   uint32 id = 1;
-  string content = 2;
+  string title = 2;
+  string content = 3;
 }
 
 message UpdatePostResponse {
-  PostSummary post_summary = 1;
+  string message = 1;
 }
 
 message DeletePostRequest {
