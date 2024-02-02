@@ -9,16 +9,39 @@ option go_package = "github.com/YehyeokBang/Simple-SNS/pkg/api/v1/post";
 service PostService {
   rpc WritePost(WritePostRequest) returns (WritePostResponse) {}
   rpc GetPosts(GetPostsRequest) returns (GetPostsResponse) {}
+  rpc GetPostById(GetPostByIdRequest) returns (GetPostByIdResponse) {}
   rpc UpdatePost(UpdatePostRequest) returns (UpdatePostResponse) {}
   rpc DeletePost(DeletePostRequest) returns (DeletePostResponse) {}
+}
+
+message PostSummary {
+  uint32 id = 1;
+  string user_name = 2;
+  string content = 3;
+  uint32 comment_count = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
 }
 
 message Post {
   uint32 id = 1;
   string user_name = 2;
   string content = 3;
-  google.protobuf.Timestamp created_at = 4;
-  google.protobuf.Timestamp updated_at = 5;
+  repeated Comment comments = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message Comment {
+  uint32 id = 1;
+  uint32 post_id = 2;
+  bool has_parent = 3;
+  uint32 parent_id = 4;
+  uint32 user_id = 5;
+  string user_name = 6;
+  string content = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
 }
 
 message WritePostRequest {
@@ -26,7 +49,7 @@ message WritePostRequest {
 }
 
 message WritePostResponse {
-  Post post = 1;
+  PostSummary post_summary = 1;
 }
 
 message GetPostsRequest {
@@ -35,7 +58,15 @@ message GetPostsRequest {
 }
 
 message GetPostsResponse {
-  repeated Post posts = 1;
+  repeated PostSummary post_summaries = 1;
+}
+
+message GetPostByIdRequest {
+  uint32 id = 1;
+}
+
+message GetPostByIdResponse {
+  Post post = 1;
 }
 
 message UpdatePostRequest {
@@ -44,7 +75,7 @@ message UpdatePostRequest {
 }
 
 message UpdatePostResponse {
-  Post post = 1;
+  PostSummary post_summary = 1;
 }
 
 message DeletePostRequest {

@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"strconv"
+	"time"
 
 	pb "github.com/YehyeokBang/Simple-SNS/pkg/api/v1/post"
 	"github.com/YehyeokBang/Simple-SNS/pkg/auth"
@@ -50,43 +51,97 @@ func (h *PostHandler) WritePost(ctx context.Context, req *pb.WritePostRequest) (
 	h.DB.Joins("User").First(&post)
 
 	return &pb.WritePostResponse{
-		Post: &pb.Post{
-			Id:        uint32(post.ID),
-			UserName:  post.User.Name,
-			Content:   post.Content,
-			CreatedAt: timestamppb.New(post.CreatedAt),
-			UpdatedAt: timestamppb.New(post.UpdatedAt),
+		PostSummary: &pb.PostSummary{
+			Id:           uint32(post.ID),
+			UserName:     post.User.Name,
+			Content:      post.Content,
+			CommentCount: 0,
+			CreatedAt:    timestamppb.New(post.CreatedAt),
+			UpdatedAt:    timestamppb.New(post.UpdatedAt),
 		},
 	}, nil
 }
 
 func (h *PostHandler) GetPosts(ctx context.Context, req *pb.GetPostsRequest) (*pb.GetPostsResponse, error) {
-	var posts []db.Post
-	if req.GetPage() != 0 {
-		result := h.DB.Preload("User").Limit(int(req.Limit)).Offset(int(req.Limit*req.Page - 1)).Find(&posts)
-		if result.Error != nil {
-			return nil, status.Error(codes.Internal, "failed to get posts")
-		}
-	} else {
-		result := h.DB.Preload("User").Find(&posts)
-		if result.Error != nil {
-			return nil, status.Error(codes.Internal, "failed to get posts")
-		}
+	type Result struct {
+		PostID    uint
+		UserName  string
+		Content   string
+		CreatedAt time.Time
+		UpdatedAt time.Time
+		Count     int64
 	}
 
-	var pbPosts []*pb.Post
-	for _, post := range posts {
-		pbPosts = append(pbPosts, &pb.Post{
-			Id:        uint32(post.ID),
-			UserName:  post.User.Name,
-			Content:   post.Content,
-			CreatedAt: timestamppb.New(post.CreatedAt),
-			UpdatedAt: timestamppb.New(post.UpdatedAt),
+	var results []Result
+	query := h.DB.Model(&db.Post{}).
+		Select("posts.id as post_id, users.name as user_name, posts.content, posts.created_at, posts.updated_at, count(comments.id) as count").
+		Joins("left join users on users.id = posts.user_id").
+		Joins("left join comments on comments.post_id = posts.id").
+		Group("posts.id, users.name, posts.content, posts.created_at, posts.updated_at").
+		Order("posts.updated_at desc")
+
+	if req.GetPage() != 0 {
+		query = query.Limit(int(req.GetLimit())).Offset(int((req.GetPage() - 1) * req.GetLimit()))
+	}
+	result := query.Find(&results)
+
+	if result.Error != nil {
+		return nil, status.Error(codes.Internal, "failed to get posts")
+	}
+
+	var pbPosts []*pb.PostSummary
+	for _, result := range results {
+		pbPosts = append(pbPosts, &pb.PostSummary{
+			Id:           uint32(result.PostID),
+			UserName:     result.UserName,
+			Content:      result.Content,
+			CommentCount: uint32(result.Count),
+			CreatedAt:    timestamppb.New(result.CreatedAt),
+			UpdatedAt:    timestamppb.New(result.UpdatedAt),
 		})
 	}
 
 	return &pb.GetPostsResponse{
-		Posts: pbPosts,
+		PostSummaries: pbPosts,
+	}, nil
+}
+
+func (h *PostHandler) GetPostById(ctx context.Context, req *pb.GetPostByIdRequest) (*pb.GetPostByIdResponse, error) {
+	var post db.Post
+	result := h.DB.Joins("User").Preload("Comments").Preload("Comments.User").First(&post, req.GetId())
+	if result.Error != nil {
+		return nil, status.Error(codes.NotFound, "post is not exists")
+	}
+
+	var pbComments []*pb.Comment
+	for _, comment := range post.Comments {
+		parentID := uint32(0)
+		if comment.ParentCommentID != nil {
+			parentID = uint32(*comment.ParentCommentID)
+		}
+
+		pbComments = append(pbComments, &pb.Comment{
+			Id:        uint32(comment.ID),
+			PostId:    uint32(comment.PostID),
+			UserId:    uint32(comment.UserID),
+			HasParent: comment.ParentCommentID != nil,
+			ParentId:  parentID,
+			Content:   comment.Content,
+			UserName:  comment.User.Name,
+			CreatedAt: timestamppb.New(comment.CreatedAt),
+			UpdatedAt: timestamppb.New(comment.UpdatedAt),
+		})
+	}
+
+	return &pb.GetPostByIdResponse{
+		Post: &pb.Post{
+			Id:        uint32(post.ID),
+			UserName:  post.User.Name,
+			Content:   post.Content,
+			Comments:  pbComments,
+			CreatedAt: timestamppb.New(post.CreatedAt),
+			UpdatedAt: timestamppb.New(post.UpdatedAt),
+		},
 	}, nil
 }
 
@@ -121,12 +176,13 @@ func (h *PostHandler) UpdatePost(ctx context.Context, req *pb.UpdatePostRequest)
 	h.DB.Preload("User").First(&loadedPost, post.ID)
 
 	return &pb.UpdatePostResponse{
-		Post: &pb.Post{
-			Id:        uint32(loadedPost.ID),
-			UserName:  loadedPost.User.Name,
-			Content:   loadedPost.Content,
-			CreatedAt: timestamppb.New(loadedPost.CreatedAt),
-			UpdatedAt: timestamppb.New(loadedPost.UpdatedAt),
+		PostSummary: &pb.PostSummary{
+			Id:           uint32(loadedPost.ID),
+			UserName:     loadedPost.User.Name,
+			Content:      loadedPost.Content,
+			CommentCount: uint32(len(loadedPost.Comments)),
+			CreatedAt:    timestamppb.New(loadedPost.CreatedAt),
+			UpdatedAt:    timestamppb.New(loadedPost.UpdatedAt),
 		},
 	}, nil
 }
