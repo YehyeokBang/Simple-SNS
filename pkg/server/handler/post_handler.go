@@ -70,6 +70,7 @@ func (h *PostHandler) GetPosts(ctx context.Context, req *pb.GetPostsRequest) (*p
 	result := h.DB.Scopes(Paginate(req)).
 		Preload("User").
 		Preload("Comments").
+		Order("created_at desc").
 		Find(&posts)
 
 	if result.Error != nil {
@@ -113,6 +114,68 @@ func sortComments(comments []*pb.Comment) []*pb.Comment {
 	}
 
 	return sortedComments
+}
+
+func (h *PostHandler) SearchPostsByTitle(ctx context.Context, req *pb.SearchPostsRequest) (*pb.GetPostsResponse, error) {
+	var posts []db.Post
+	result := h.DB.Where("title LIKE ?", "%"+req.GetKeyword()+"%").
+		Preload("User").
+		Preload("Comments").
+		Order("created_at desc").
+		Find(&posts)
+
+	if result.Error != nil {
+		return nil, status.Error(codes.Internal, "failed to search posts")
+	}
+
+	var pbPosts []*pb.PostSummary
+	for _, post := range posts {
+		commentCount := len(post.Comments)
+		pbPosts = append(pbPosts, &pb.PostSummary{
+			Id:           uint32(post.ID),
+			UserName:     post.User.Name,
+			Title:        post.Title,
+			CommentCount: uint32(commentCount),
+			CreatedAt:    timestamppb.New(post.CreatedAt),
+			UpdatedAt:    timestamppb.New(post.UpdatedAt),
+		})
+	}
+
+	return &pb.GetPostsResponse{
+		PostSummaries: pbPosts,
+	}, nil
+}
+
+func (h *PostHandler) SearchPostsByWriter(ctx context.Context, req *pb.SearchPostsRequest) (*pb.GetPostsResponse, error) {
+	var posts []db.Post
+	result := h.DB.Joins("User").
+		Where("User.name LIKE ?", "%"+req.GetKeyword()+"%").
+		Preload("User").
+		Preload("Comments").
+		Order("created_at desc").
+		Find(&posts)
+
+	if result.Error != nil {
+		println(result.Error)
+		return nil, status.Error(codes.Internal, "failed to search posts")
+	}
+
+	var pbPosts []*pb.PostSummary
+	for _, post := range posts {
+		commentCount := len(post.Comments)
+		pbPosts = append(pbPosts, &pb.PostSummary{
+			Id:           uint32(post.ID),
+			UserName:     post.User.Name,
+			Title:        post.Title,
+			CommentCount: uint32(commentCount),
+			CreatedAt:    timestamppb.New(post.CreatedAt),
+			UpdatedAt:    timestamppb.New(post.UpdatedAt),
+		})
+	}
+
+	return &pb.GetPostsResponse{
+		PostSummaries: pbPosts,
+	}, nil
 }
 
 func (h *PostHandler) GetPostById(ctx context.Context, req *pb.GetPostByIdRequest) (*pb.GetPostByIdResponse, error) {

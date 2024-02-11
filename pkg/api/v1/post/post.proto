@@ -9,6 +9,8 @@ option go_package = "github.com/YehyeokBang/Simple-SNS/pkg/api/v1/post";
 service PostService {
   rpc WritePost(WritePostRequest) returns (WritePostResponse) {}
   rpc GetPosts(GetPostsRequest) returns (GetPostsResponse) {}
+  rpc SearchPostsByTitle(SearchPostsRequest) returns (GetPostsResponse) {}
+  rpc SearchPostsByWriter(SearchPostsRequest) returns (GetPostsResponse) {}
   rpc GetPostById(GetPostByIdRequest) returns (GetPostByIdResponse) {}
   rpc UpdatePost(UpdatePostRequest) returns (UpdatePostResponse) {}
   rpc DeletePost(DeletePostRequest) returns (DeletePostResponse) {}
@@ -61,6 +63,12 @@ message GetPostsRequest {
 
 message GetPostsResponse {
   repeated PostSummary post_summaries = 1;
+}
+
+message SearchPostsRequest {
+  string keyword = 1;
+  uint32 page = 2;
+  uint32 limit = 3;
 }
 
 message GetPostByIdRequest {

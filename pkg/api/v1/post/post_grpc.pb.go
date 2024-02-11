@@ -24,6 +24,8 @@ const _ = grpc.SupportPackageIsVersion7
 type PostServiceClient interface {
 	WritePost(ctx context.Context, in *WritePostRequest, opts ...grpc.CallOption) (*WritePostResponse, error)
 	GetPosts(ctx context.Context, in *GetPostsRequest, opts ...grpc.CallOption) (*GetPostsResponse, error)
+	SearchPostsByTitle(ctx context.Context, in *SearchPostsRequest, opts ...grpc.CallOption) (*GetPostsResponse, error)
+	SearchPostsByWriter(ctx context.Context, in *SearchPostsRequest, opts ...grpc.CallOption) (*GetPostsResponse, error)
 	GetPostById(ctx context.Context, in *GetPostByIdRequest, opts ...grpc.CallOption) (*GetPostByIdResponse, error)
 	UpdatePost(ctx context.Context, in *UpdatePostRequest, opts ...grpc.CallOption) (*UpdatePostResponse, error)
 	DeletePost(ctx context.Context, in *DeletePostRequest, opts ...grpc.CallOption) (*DeletePostResponse, error)
@@ -49,6 +51,24 @@ func (c *postServiceClient) WritePost(ctx context.Context, in *WritePostRequest,
 func (c *postServiceClient) GetPosts(ctx context.Context, in *GetPostsRequest, opts ...grpc.CallOption) (*GetPostsResponse, error) {
 	out := new(GetPostsResponse)
 	err := c.cc.Invoke(ctx, "/v1.post.PostService/GetPosts", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *postServiceClient) SearchPostsByTitle(ctx context.Context, in *SearchPostsRequest, opts ...grpc.CallOption) (*GetPostsResponse, error) {
+	out := new(GetPostsResponse)
+	err := c.cc.Invoke(ctx, "/v1.post.PostService/SearchPostsByTitle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *postServiceClient) SearchPostsByWriter(ctx context.Context, in *SearchPostsRequest, opts ...grpc.CallOption) (*GetPostsResponse, error) {
+	out := new(GetPostsResponse)
+	err := c.cc.Invoke(ctx, "/v1.post.PostService/SearchPostsByWriter", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +108,8 @@ func (c *postServiceClient) DeletePost(ctx context.Context, in *DeletePostReques
 type PostServiceServer interface {
 	WritePost(context.Context, *WritePostRequest) (*WritePostResponse, error)
 	GetPosts(context.Context, *GetPostsRequest) (*GetPostsResponse, error)
+	SearchPostsByTitle(context.Context, *SearchPostsRequest) (*GetPostsResponse, error)
+	SearchPostsByWriter(context.Context, *SearchPostsRequest) (*GetPostsResponse, error)
 	GetPostById(context.Context, *GetPostByIdRequest) (*GetPostByIdResponse, error)
 	UpdatePost(context.Context, *UpdatePostRequest) (*UpdatePostResponse, error)
 	DeletePost(context.Context, *DeletePostRequest) (*DeletePostResponse, error)
@@ -103,6 +125,12 @@ func (UnimplementedPostServiceServer) WritePost(context.Context, *WritePostReque
 }
 func (UnimplementedPostServiceServer) GetPosts(context.Context, *GetPostsRequest) (*GetPostsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPosts not implemented")
+}
+func (UnimplementedPostServiceServer) SearchPostsByTitle(context.Context, *SearchPostsRequest) (*GetPostsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchPostsByTitle not implemented")
+}
+func (UnimplementedPostServiceServer) SearchPostsByWriter(context.Context, *SearchPostsRequest) (*GetPostsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchPostsByWriter not implemented")
 }
 func (UnimplementedPostServiceServer) GetPostById(context.Context, *GetPostByIdRequest) (*GetPostByIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPostById not implemented")
@@ -158,6 +186,42 @@ func _PostService_GetPosts_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PostServiceServer).GetPosts(ctx, req.(*GetPostsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PostService_SearchPostsByTitle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchPostsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PostServiceServer).SearchPostsByTitle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.post.PostService/SearchPostsByTitle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PostServiceServer).SearchPostsByTitle(ctx, req.(*SearchPostsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PostService_SearchPostsByWriter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchPostsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PostServiceServer).SearchPostsByWriter(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/v1.post.PostService/SearchPostsByWriter",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PostServiceServer).SearchPostsByWriter(ctx, req.(*SearchPostsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -230,6 +294,14 @@ var PostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPosts",
 			Handler:    _PostService_GetPosts_Handler,
+		},
+		{
+			MethodName: "SearchPostsByTitle",
+			Handler:    _PostService_SearchPostsByTitle_Handler,
+		},
+		{
+			MethodName: "SearchPostsByWriter",
+			Handler:    _PostService_SearchPostsByWriter_Handler,
 		},
 		{
 			MethodName: "GetPostById",
